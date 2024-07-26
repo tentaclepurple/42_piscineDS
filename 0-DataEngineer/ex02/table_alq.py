@@ -1,4 +1,3 @@
-
 import os
 import pandas as pd
 from dotenv import load_dotenv
@@ -31,8 +30,6 @@ def load(path, tableName):
 
         engine = create_engine(DATABASE_URL)
         inspector = sqlalchemy.inspect(engine)
-        
-        print("ENGINE", engine)
 
         if inspector.has_table(tableName):
             print(f"Table {tableName} already exists")
@@ -63,7 +60,7 @@ if __name__ == "__main__":
     
     
     try:
-        load('subject/customer/data_2022_dec.csv', "data_2022_dec")
+        load('../subject/customer/data_2022_dec.csv', "data_2022_dec")
         
         stop_timer = True
         timer_thread.join()

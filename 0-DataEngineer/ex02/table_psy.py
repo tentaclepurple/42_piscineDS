@@ -14,16 +14,10 @@ DB_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 DB_HOST = 'postgres'
 DB_PORT = '5432'
 
-# Función para crear la tabla desde el CSV
 def create_table_from_csv(file_path):
-    # Leer el archivo CSV usando pandas
     df = pd.read_csv(file_path)
 
-    #print(df.head())
-    # Obtener el nombre de la tabla a partir del nombre del archivo
     table_name = 'data_2022_dec'
-
-    # Definir la creación de la tabla
 
     columns = [
         ("event_time", "TIMESTAMP"),
@@ -33,10 +27,7 @@ def create_table_from_csv(file_path):
         ("user_id", "INTEGER"),
         ("user_session", "TEXT")
     ]
-    
-
-    #print("COLS", columns)
-    
+        
     create_table_query = sql.SQL(
         "CREATE TABLE IF NOT EXISTS {} (id SERIAL PRIMARY KEY, {})"
     ).format(
@@ -46,7 +37,6 @@ def create_table_from_csv(file_path):
         )
     )
     
-
     conn = psycopg2.connect(
         dbname=DB_NAME,
         user=DB_USER,
@@ -77,7 +67,7 @@ def create_table_from_csv(file_path):
 
     cursor.close()
     conn.close()
-    print("\nConexión cerrada")
+    print("\Conection closed")
 
 
 
