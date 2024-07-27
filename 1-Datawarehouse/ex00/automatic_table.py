@@ -38,7 +38,8 @@ def load(path, tableName):
             print(f"Table {tableName} already exists")
         else:
             print(f"Table {tableName} doesn't exist, creating...")
-            data = pd.read_csv(path)
+            chunksize = 10000  # Ajustar según la memoria disponible
+            #data = pd.read_csv(path)
             data_types = {
                 "event_time": sqlalchemy.DateTime(),
                 "event_type": sqlalchemy.types.String(length=255),
@@ -47,7 +48,8 @@ def load(path, tableName):
                 "user_id": sqlalchemy.types.BigInteger(),
                 "user_session": sqlalchemy.types.UUID(as_uuid=True)
             }
-            data.to_sql(tableName, engine, index=False, dtype=data_types)
+            for chunk in pd.read_csv(path, chunksize=chunksize):
+                chunk.to_sql(tableName, engine, if_exists='append', index=False)
             print(f"Table {tableName} created")
 
         engine.dispose()

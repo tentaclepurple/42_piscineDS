@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 import os
 import time
 
-
 load_dotenv(dotenv_path="../.env")
 
 DB_NAME = os.getenv('POSTGRES_DB')
@@ -12,23 +11,13 @@ DB_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 DB_HOST = 'postgres'
 DB_PORT = '5432'
 
-sql_join = """
-CREATE TABLE IF NOT EXISTS customers AS (
-    SELECT * FROM data_2022_dec
-    UNION ALL
-    SELECT * FROM data_2022_nov
-    UNION ALL
-    SELECT * FROM data_2022_oct
-    UNION ALL
-    SELECT * FROM data_2023_feb
-    UNION ALL
-    SELECT * FROM data_2023_jan
-);
+sql_remove_dups = """
+CREATE TABLE customers_unique AS
+SELECT DISTINCT * FROM customers;
 """
 
-
-def join_tables():
-    """Join the tables"""
+def remove_dups():
+    """Remove duplicates from the fusion table"""
     
     conn = psycopg2.connect(
         dbname=DB_NAME,
@@ -39,22 +28,20 @@ def join_tables():
     )
     print("Connected to postgres!")
     cursor = conn.cursor()
-    cursor.execute(sql_join)
-    print("Data has been fetched from the table.")
+    cursor.execute(sql_remove_dups)
+    print("Removed duplicates from 'fusion'.")
+
     conn.commit()
 
     cursor.close()
     conn.close()
 
-
 if __name__ == "__main__":
 
-	start_time = time.time()
-
+    start_time = time.time()
     try:
-        join_tables()
-    
+        remove_dups()
     except Exception as error:
         print(f"An error occurred: {error}")
-	
-	print(f"--- {time.time() - start_time} seconds ---")
+
+    print(f"--- {time.time() - start_time} seconds ---")
