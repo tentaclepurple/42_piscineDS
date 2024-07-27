@@ -67,6 +67,7 @@ def backup_and_fusion_tables():
         cursor.close()
         conn.close()
 
+
 if __name__ == "__main__":
     start_time = time.time()
 
