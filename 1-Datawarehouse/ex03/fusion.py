@@ -25,9 +25,9 @@ SELECT
     i.category_code,
     i.brand
 FROM
-    customers c
+    customers_clean c
 JOIN
-    item i
+    item_clean i
 ON
     c.product_id = i.product_id;
 """

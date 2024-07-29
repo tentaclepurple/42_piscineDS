@@ -24,7 +24,7 @@ SELECT
     DATE(event_time) AS date,
     COUNT(DISTINCT user_id) AS unique_users
 FROM 
-    customers_unique
+    customers
 WHERE 
     event_type = 'purchase'
     AND event_time BETWEEN '2022-10-01' AND '2023-01-31'
@@ -40,7 +40,7 @@ FROM (
     SELECT 
         DATE(event_time) AS date
     FROM 
-        customers_unique
+        customers
     WHERE 
         event_type = 'purchase'
         AND event_time BETWEEN '2022-10-01' AND '2023-01-31'
@@ -82,8 +82,8 @@ def plot_daily_unique_customers(data):
     plt.xticks(months, [d.strftime('%b') for d in months], rotation=0)
     
     plt.tight_layout()
-    plt.savefig('daily_customers_purchases.png')
-    print("Chart saved as 'daily_customers_purchases.png'.")
+    plt.savefig('lineplot_daily_customers.png')
+    print("Chart saved as 'lineplot_daily_customers.png'.")
     plt.close()
 
 

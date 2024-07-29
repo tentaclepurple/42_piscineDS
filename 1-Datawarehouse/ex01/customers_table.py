@@ -49,12 +49,12 @@ def join_tables():
 
 if __name__ == "__main__":
 
-	start_time = time.time()
+    start_time = time.time()
 
     try:
         join_tables()
     
     except Exception as error:
         print(f"An error occurred: {error}")
-	
-	print(f"--- {time.time() - start_time} seconds ---")
+    
+    print(f"--- {time.time() - start_time} seconds ---")

@@ -24,8 +24,8 @@ SELECT
     DATE_TRUNC('month', event_time) AS month,
     SUM(price) /1000000 AS total_sales_millions
 FROM 
-    customers_unique
-WHERE 
+    customers
+WHERE
     event_type = 'purchase'
     AND event_time BETWEEN '2022-10-01' AND '2023-01-31'
 GROUP BY 
@@ -37,16 +37,16 @@ ORDER BY
 total_rows_query = """
 SELECT COUNT(*)
 FROM (
-    SELECT 
-        DATE_TRUNC('month', event_time) AS month,
-        SUM(price) / 1000000 AS total_sales_millions
-    FROM 
-        customers_unique
-    WHERE 
-        event_type = 'purchase'
-        AND event_time BETWEEN '2022-10-01' AND '2023-01-31'
-    GROUP BY 
-        DATE_TRUNC('month', event_time)
+SELECT 
+    DATE_TRUNC('month', event_time) AS month,
+    SUM(price) / 1000000 AS total_sales_millions
+FROM 
+    customers
+WHERE 
+    event_type = 'purchase'
+    AND event_time BETWEEN '2022-10-01' AND '2023-01-31'
+GROUP BY 
+    DATE_TRUNC('month', event_time)
 ) AS subquery;
 
 """
@@ -57,7 +57,6 @@ def get_df():
     
     total_rows = pd.read_sql(total_rows_query, engine).iloc[0, 0]
     
-    #for chunk in pd.read_sql(query, engine, chunksize=10000):
     for chunk in tqdm(pd.read_sql(query, engine, chunksize=10000), total=total_rows//10000, unit='chunk'):
         chunks.append(chunk)
     df = pd.concat(chunks, ignore_index=True)
@@ -65,27 +64,31 @@ def get_df():
 
 
 def plot_monthly_sales(data):
-    """Plot the monthly sales"""
+    """Bar plot the total sales"""
 
+    data["total_sales_millions"] = data["total_sales_millions"]*0.8
+    
     # Convert event_time pandas to datetime
-    data['date'] = pd.to_datetime(data['date'])
+    data['month'] = pd.to_datetime(df['month'])
+    
+    data['month'] = data['month'].dt.strftime('%b')
     
     # Set event_time as datetime and set it as index
-    data.set_index('date', inplace=True)
+#    data.set_index('date', inplace=True)
     
-    plt.figure(figsize=(12, 6))
-    data['unique_users'].plot(kind='line', color='blue')
-    plt.title('Unique Customers per Day (Purchases Only)')
-    plt.xlabel('Date')
-    plt.ylabel('Number of Customers')
-    plt.grid(True, alpha=0.3)
     
-    months = pd.date_range(start=data.index.min(), end=data.index.max(), freq='MS')
-    plt.xticks(months, [d.strftime('%b') for d in months], rotation=0)
-    
-    plt.tight_layout()
-    plt.savefig('daily_customers_purchases.png')
-    print("Chart saved as 'daily_customers_purchases.png'.")
+
+    # Crear el bar plot
+    plt.figure(figsize=(10, 6))
+    plt.bar(data['month'], data['total_sales_millions'], color='blue')
+
+    # Añadir títulos y etiquetas
+    plt.title('Total Sales in Millions of Altarians')
+    plt.xlabel('Month')
+    plt.ylabel('Total Sales (Millions)')
+    plt.ylim(0, max(data['total_sales_millions']) * 1.2)  # Asegurar un poco de espacio por encima de la barra más alta
+    plt.grid(axis='y', alpha=0.3)
+    plt.savefig('barplot_monthly_sales.png')
     plt.close()
 
 
@@ -94,30 +97,8 @@ if __name__ == "__main__":
 
     try:
         df = get_df()
-        print(df)
 
-        # Verificar duplicados en todas las columnas
-        duplicates_all_columns = df.duplicated()
-        print(f"Duplicados en todas las columnas: {duplicates_all_columns.sum()}")
-
-        # Verificar duplicados basados en las columnas clave (event_time, product_id, price)
-        duplicates_key_columns = df.duplicated(subset=['event_time', 'product_id', 'price'])
-        print(f"Duplicados en las columnas clave: {duplicates_key_columns.sum()}")
-
-        # Convertir event_time a datetime
-        df['event_time'] = pd.to_datetime(df['event_time'])
-
-        # Agrupar por mes y sumar los precios
-        monthly_sales = df[df['event_type'] == 'purchase'].groupby(df['event_time'].dt.to_period('M'))['price'].sum()
-
-        # Convertir a millones
-        monthly_sales = monthly_sales / 1e6
-
-        # Mostrar el resumen mensual
-        print(monthly_sales)
-
-
-        #plot_monthly_sales(df)
+        plot_monthly_sales(df)
 
     except Exception as error:
         print(f"An error occurred: {error}")

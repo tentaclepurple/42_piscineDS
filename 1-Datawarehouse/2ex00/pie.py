@@ -14,12 +14,11 @@ DB_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 DB_HOST = 'postgres'
 DB_PORT = '5432'
 
-query = "SELECT event_type FROM customers_unique"
+query = "SELECT event_type FROM customers"
 
-total_rows_query = "SELECT COUNT(*) FROM customers_unique"
+total_rows_query = "SELECT COUNT(*) FROM customers"
 
 DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-
 
 
 def get_event_type_data():
@@ -44,7 +43,7 @@ def plot_pie_chart(data):
     plt.pie(event_counts, labels=event_counts.index, autopct='%1.1f%%', startangle=140)
     plt.title('Distribution of Event Types')
     plt.axis('equal')
-    plt.savefig('event_type_distribution.png')
+    plt.savefig('pie_chart_event_types.png')
     plt.close()
 
 

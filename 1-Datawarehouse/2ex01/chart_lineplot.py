@@ -20,14 +20,14 @@ DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NA
 engine = create_engine(DATABASE_URL)
 
 query = """
-SELECT event_time, user_id FROM customers_unique
+SELECT event_time, user_id FROM customers
 WHERE event_type = 'purchase'
 AND event_time BETWEEN '2022-10-01' AND '2023-02-28'
 ORDER BY event_time;
 """
 
 total_rows_query = """
-    SELECT COUNT(*) FROM customers_unique
+    SELECT COUNT(*) FROM customers
     WHERE event_type = 'purchase'
     AND event_time BETWEEN '2022-10-01' AND '2023-02-28';
     """
@@ -68,8 +68,8 @@ def plot_daily_customers(data):
     plt.xticks(months, [d.strftime('%b') for d in months], rotation=0)
     
     plt.tight_layout()
-    plt.savefig('daily_customers_purchases.png')
-    print("Chart saved as 'daily_customers_purchases.png'.")
+    plt.savefig('lineplot_daily_customers.png')
+    print("Chart saved as 'lineplot_daily_customers.png'.")
     plt.close()
 
 
