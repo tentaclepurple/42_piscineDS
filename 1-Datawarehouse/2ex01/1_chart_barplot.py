@@ -80,13 +80,11 @@ def plot_monthly_sales(data):
 
     # Crear el bar plot
     plt.figure(figsize=(10, 6))
-    plt.bar(data['month'], data['total_sales_millions'], color='blue')
+    plt.bar(data['month'], data['total_sales_millions'], color='skyblue')
 
     # Añadir títulos y etiquetas
-    plt.title('Total Sales in Millions of Altarians')
-    plt.xlabel('Month')
-    plt.ylabel('Total Sales (Millions)')
-    plt.ylim(0, max(data['total_sales_millions']) * 1.2)  # Asegurar un poco de espacio por encima de la barra más alta
+    plt.xlabel('month')
+    plt.ylabel('total sales in millions of Altairians')
     plt.grid(axis='y', alpha=0.3)
     plt.savefig('barplot_monthly_sales.png')
     plt.close()

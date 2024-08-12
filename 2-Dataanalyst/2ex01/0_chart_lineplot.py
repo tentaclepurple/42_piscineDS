@@ -20,17 +20,35 @@ DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NA
 engine = create_engine(DATABASE_URL)
 
 query = """
-SELECT event_time, user_id FROM customers
-WHERE event_type = 'purchase'
-AND event_time BETWEEN '2022-10-01' AND '2023-02-28'
-ORDER BY event_time;
+SELECT 
+    DATE(event_time) AS date,
+    COUNT(DISTINCT user_id) AS unique_users
+FROM 
+    customers
+WHERE 
+    event_type = 'purchase'
+    AND event_time BETWEEN '2022-10-01' AND '2023-01-31'
+GROUP BY 
+    DATE(event_time)
+ORDER BY 
+    date;
 """
 
 total_rows_query = """
-    SELECT COUNT(*) FROM customers
-    WHERE event_type = 'purchase'
-    AND event_time BETWEEN '2022-10-01' AND '2023-02-28';
-    """
+SELECT COUNT(*) AS total_days
+FROM (
+    SELECT 
+        DATE(event_time) AS date
+    FROM 
+        customers
+    WHERE 
+        event_type = 'purchase'
+        AND event_time BETWEEN '2022-10-01' AND '2023-01-31'
+    GROUP BY 
+        DATE(event_time)
+) AS daily_unique_users;
+"""
+
 
 def get_df():
     chunks = []
@@ -43,28 +61,22 @@ def get_df():
     return df
 
 
-def plot_daily_customers(data):
+def plot_daily_unique_customers(data):
     """Plot the number of unique customers per day"""
 
-    # Convert event_time pandas to datetime
-    data['event_time'] = pd.to_datetime(data['event_time'])
-    #ser event_time as datetime and set it as index
-    data.set_index('event_time', inplace=True)
+    # Convert 'date' to datetime
+    data['date'] = pd.to_datetime(data['date'])
     
-    # D is for daily
-    #['user_id'] is the column to count
-    #nunique() is the function to count unique values
-    daily_customers = data.resample('D')['user_id'].nunique()
+    # Set 'date' as index
+    data.set_index('date', inplace=True)
     
     plt.figure(figsize=(12, 6))
-    daily_customers.plot(kind='line', color='blue')
-    plt.title('Unique Customers per Day (Purchases Only)')
-    plt.xlabel('Date')
-    plt.ylabel('Number of Customers')
+    data['unique_users'].plot(kind='line', color='skyblue')
+    plt.ylabel('number of customers')
     plt.grid(True, alpha=0.3)
     
     # Set x-axis ticks to show only the first day of each month
-    months = pd.date_range(start=daily_customers.index.min(), end=daily_customers.index.max(), freq='MS')
+    months = pd.date_range(start=data.index.min(), end=data.index.max(), freq='MS')
     plt.xticks(months, [d.strftime('%b') for d in months], rotation=0)
     
     plt.tight_layout()
@@ -73,18 +85,16 @@ def plot_daily_customers(data):
     plt.close()
 
 
-
 if __name__ == "__main__":
     start_time = time.time()
 
     try:
+        #df = pd.read_sql(query, engine)
         df = get_df()
-
         print(df.head())
-
-        plot_daily_customers(df)
+        plot_daily_unique_customers(df)
 
     except Exception as error:
         print(f"An error occurred: {error}")
 
-    print(f"Execution time: {time.time() - start_time} seconds")
+    print("Execution time:", time.time() - start_time)

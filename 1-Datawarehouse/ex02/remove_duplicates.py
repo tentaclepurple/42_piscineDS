@@ -31,15 +31,15 @@ GROUP BY
 
 #cleans duplicates from the customers table
 sql_clean_customers = """
-DROP TABLE IF EXISTS customers_clean;
-CREATE TABLE customers_clean AS
+DROP TABLE IF EXISTS customers_clean_2;
+CREATE TABLE customers_clean_2 AS
 WITH ranked_events AS (
   SELECT *,
          ROW_NUMBER() OVER (
            PARTITION BY event_type, product_id, price, user_id, user_session
            ORDER BY event_time
          ) AS rn
-  FROM customers
+  FROM customers_2
 )
 SELECT 
   event_time, event_type, product_id, price, user_id, user_session

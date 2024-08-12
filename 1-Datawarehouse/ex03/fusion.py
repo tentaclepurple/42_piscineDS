@@ -12,8 +12,8 @@ DB_HOST = 'postgres'
 DB_PORT = '5432'
 
 sql_fusion = """
-DROP TABLE IF EXISTS new_customers;
-CREATE TABLE new_customers AS
+DROP TABLE IF EXISTS new_customers_3;
+CREATE TABLE new_customers_3 AS
 SELECT
     c.event_time,
     c.event_type,
@@ -25,7 +25,7 @@ SELECT
     i.category_code,
     i.brand
 FROM
-    customers_clean c
+    customers_clean_2 c
 JOIN
     item_clean i
 ON
@@ -54,9 +54,9 @@ def backup_and_fusion_tables():
         cursor.execute(sql_fusion)
         print("Tables 'customers' and 'item' have been fused into 'new_customers'.")
         
-        cursor.execute(sql_rename)
+        """ cursor.execute(sql_rename)
         print("Renamed 'new_customers' to 'customers' and 'customers' to 'old_customers'.")
-        
+         """
         conn.commit()
 
     except Exception as error:

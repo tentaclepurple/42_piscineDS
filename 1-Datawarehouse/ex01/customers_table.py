@@ -13,7 +13,7 @@ DB_HOST = 'postgres'
 DB_PORT = '5432'
 
 sql_join = """
-CREATE TABLE IF NOT EXISTS customers AS (
+CREATE TABLE IF NOT EXISTS customers_2 AS (
     SELECT * FROM data_2022_dec
     UNION ALL
     SELECT * FROM data_2022_nov

@@ -71,10 +71,8 @@ def plot_daily_unique_customers(data):
     data.set_index('date', inplace=True)
     
     plt.figure(figsize=(12, 6))
-    data['unique_users'].plot(kind='line', color='blue')
-    plt.title('Unique Customers per Day (Purchases Only)')
-    plt.xlabel('Date')
-    plt.ylabel('Number of Customers')
+    data['unique_users'].plot(kind='line', color='skyblue')
+    plt.ylabel('number of customers')
     plt.grid(True, alpha=0.3)
     
     # Set x-axis ticks to show only the first day of each month
