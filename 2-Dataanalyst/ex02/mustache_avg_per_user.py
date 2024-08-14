@@ -22,26 +22,29 @@ engine = create_engine(DATABASE_URL)
 
 query = """
 WITH session_totals AS (
-    SELECT
+    SELECT 
         user_id,
         user_session,
-        SUM(price) AS session_cart_total
-    FROM
+        SUM(price) AS total_price
+    FROM 
         customers
-    WHERE
+    WHERE 
         event_type = 'purchase'
-    GROUP BY
-        user_id, user_session
+    GROUP BY 
+        user_id, 
+        user_session
 )
-SELECT
+SELECT 
     user_id,
-    AVG(session_cart_total) AS avg_cart_price
-FROM
+    AVG(total_price) AS avg_purchase_price
+FROM 
     session_totals
-GROUP BY
+GROUP BY 
     user_id
-HAVING
-	AVG(session_cart_total) BETWEEN 26 AND 43;
+HAVING 
+    AVG(total_price) BETWEEN 20 AND 42
+ORDER BY 
+    user_id;
 """
 
 total_rows_query = """
@@ -76,15 +79,15 @@ def avg_box_plot(data):
     """
 
 
-    data['avg_cart_price'] = pd.to_numeric(data['avg_cart_price'], errors='coerce')
+    data['avg_purchase_price'] = pd.to_numeric(data['avg_purchase_price'], errors='coerce')
     
     plt.figure(figsize=(10, 6))
-    plt.boxplot(data['avg_cart_price'], vert=False, widths=0.5,
+    plt.boxplot(data['avg_purchase_price'], vert=False, widths=0.5,
                     boxprops=dict(facecolor='lightblue', edgecolor='black'),
-                    flierprops=dict(marker='D', markersize=8, markerfacecolor='lightgray', markeredgecolor='none'),
+                    flierprops=dict(marker='o', markersize=4, markerfacecolor='black', markeredgecolor='none'),
                     patch_artist=True, whis=0.2)
     
-    plt.xticks(np.arange(int(data['avg_cart_price'].min()), int(data['avg_cart_price'].max()) + 1, step=2))
+    plt.xticks(np.arange(int(data['avg_purchase_price'].min()), int(data['avg_purchase_price'].max()) + 1, step=2))
     plt.yticks([])
     plt.grid(True, axis='y', alpha=0.3)
     plt.tight_layout()
