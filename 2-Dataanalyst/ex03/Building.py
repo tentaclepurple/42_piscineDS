@@ -158,16 +158,16 @@ def buildings(df, df2):
 if __name__ == "__main__":
     start_time = time.time()
 
-    #try:
-    df = pd.read_sql(query, engine)
-    df2 = pd.read_sql(query2, engine)
-    print("df 1\n", df)
-    print()
-    print("df 2\n", df2)
-    buildings(df, df2)
+    try:
+        df = pd.read_sql(query, engine)
+        df2 = pd.read_sql(query2, engine)
+        print("df 1\n", df)
+        print()
+        print("df 2\n", df2)
+        buildings(df, df2)
 
         
-"""     except Exception as error:
+    except Exception as error:
         print(f"An error occurred: {error}")
 
-    print("Execution time:", time.time() - start_time) """
+    print("Execution time:", time.time() - start_time)

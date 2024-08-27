@@ -6,6 +6,7 @@ flake8==7.1.0
 fonttools==4.53.1
 greenlet==3.0.3
 idna==3.7
+joblib==1.4.2
 kiwisolver==1.4.5
 matplotlib==3.9.1
 mccabe==0.7.0
@@ -21,8 +22,12 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2024.1
 requests==2.32.3
+scikit-learn==1.5.1
+scipy==1.14.1
+seaborn==0.13.2
 six==1.16.0
 SQLAlchemy==2.0.31
+threadpoolctl==3.5.0
 tqdm==4.66.4
 typing_extensions==4.12.2
 tzdata==2024.1

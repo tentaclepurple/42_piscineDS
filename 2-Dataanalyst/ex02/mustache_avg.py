@@ -27,7 +27,7 @@ WITH session_totals AS (
         user_session,
         SUM(price) AS total_price
     FROM 
-        customers
+        customers2
     WHERE 
         event_type = 'purchase'
     GROUP BY 
@@ -41,43 +41,15 @@ FROM
     session_totals
 GROUP BY 
     user_id
-HAVING 
-    AVG(total_price) BETWEEN 20 AND 42
 ORDER BY 
     user_id;
 """
-
-total_rows_query = """
-SELECT COUNT(*) FROM (
-    SELECT
-        user_id, AVG(price) AS avg_cart_price
-    FROM
-        customers
-    WHERE
-        event_type = 'cart'
-    GROUP BY
-        user_id
-    HAVING AVG(price) BETWEEN 26 AND 43
-) AS subquery;
-"""
-
-
-def get_df():
-    chunks = []
-    
-    total_rows = pd.read_sql(total_rows_query, engine).iloc[0, 0]
-    
-    for chunk in tqdm(pd.read_sql(query, engine, chunksize=10000), total=total_rows//10000, unit='chunk'):
-        chunks.append(chunk)
-    df = pd.concat(chunks, ignore_index=True)
-    return df
 
 
 def avg_box_plot(data):
     """
     plots the avg price per user
     """
-
 
     data['avg_purchase_price'] = pd.to_numeric(data['avg_purchase_price'], errors='coerce')
     
@@ -87,7 +59,7 @@ def avg_box_plot(data):
                     flierprops=dict(marker='o', markersize=4, markerfacecolor='black', markeredgecolor='none'),
                     patch_artist=True, whis=0.2)
     
-    plt.xticks(np.arange(int(data['avg_purchase_price'].min()), int(data['avg_purchase_price'].max()) + 1, step=2))
+    plt.xticks(np.arange(int(data['avg_purchase_price'].min()), int(data['avg_purchase_price'].max()) + 1, step=100))
     plt.yticks([])
     plt.grid(True, axis='y', alpha=0.3)
     plt.tight_layout()
