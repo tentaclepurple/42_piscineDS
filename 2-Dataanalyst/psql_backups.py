@@ -32,10 +32,11 @@ if __name__ == "__main__":
 
     #backup_database("piscineds.sql")
 
-    #copy_backup_to_container("piscineds.sql")
+    #copy_backup_to_container("piscineds_customers.sql")
 
-    backup_table("customers", "piscineds_customers.sql")
+    #backup_table("customers", "piscineds_customers.sql")
     
-    #restore_table("fusion_no_duplicates.sql") """
+    restore_table("piscineds_customers.sql")
 
     print(f"--- {time.time() - start_time} seconds ---")
+    
