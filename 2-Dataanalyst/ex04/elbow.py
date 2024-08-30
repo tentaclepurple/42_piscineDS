@@ -3,7 +3,6 @@ import pandas as pd
 from dotenv import load_dotenv
 import os
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 import time
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
@@ -24,66 +23,12 @@ DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NA
 engine = create_engine(DATABASE_URL)
 
 query = """
-WITH user_stats AS (
-    SELECT
-        user_id,
-        MIN(event_time) AS first_event,
-        MAX(event_time) AS last_event,
-        COUNT(DISTINCT CASE WHEN event_type = 'purchase' THEN event_time END) AS purchase_count,
-        COUNT(DISTINCT event_time) AS total_events,
-        AVG(CASE WHEN event_type = 'purchase' THEN price ELSE NULL END) AS avg_purchase_price,
-        SUM(CASE WHEN event_type = 'purchase' THEN price ELSE 0 END) AS total_spent
-    FROM
-        customers2
-    GROUP BY
-        user_id
-)
-SELECT
-    us.*,
-    EXTRACT(DAY FROM NOW() - us.last_event) AS days_since_last_event,
-    EXTRACT(DAY FROM us.last_event - us.first_event) AS customer_lifetime_days,
-    us.purchase_count::float / NULLIF(us.total_events, 0) AS purchase_ratio
-FROM
-    user_stats us;
+SELECT user_id, COUNT(*) AS purchases
+FROM customers2
+WHERE event_type = 'purchase'
+GROUP BY user_id
+ORDER BY purchases DESC;
 """
-
-
-def visualize_clusters(df):
-    '''
-    Visualiza los clústeres en 2D utilizando PCA
-    '''
-    pca = PCA(n_components=3)
-    df_pca = pca.fit_transform(preprocess_data(df))
-    
-    # Transformar los centroides a las mismas dimensiones que PCA
-    centroids_pca = pca.transform(kmeans_model.cluster_centers_)
-    
-    df_pca = pd.DataFrame(df_pca, columns=['PCA1', 'PCA2'])
-    df_pca['cluster'] = df['cluster']
-    
-    plt.figure(figsize=(10, 8))
-    
-    # Graficar los puntos
-    sns.scatterplot(x='PCA1', y='PCA2', hue='cluster', data=df_pca, palette='viridis', s=100)
-    
-    # Añadir los centroides
-    plt.scatter(centroids_pca[:, 0], centroids_pca[:, 1], s=300, c='red', marker='X', label='Centroides')
-    plt.title('Visualización de Clústeres con PCA')
-    plt.savefig('cluster_visual.png')
-
-
-def preprocess_data(df):
-    '''
-    Preprocess and normalize data
-    '''
-    features = ['purchase_count', 'total_events', 'avg_purchase_price', 'total_spent',
-                'days_since_last_event', 'customer_lifetime_days', 'purchase_ratio']
-    
-    df[features] = df[features].fillna(0)
-    scaler = StandardScaler()
-    df_scaled = pd.DataFrame(scaler.fit_transform(df[features]), columns=features)
-    
-    return df_scaled
 
 
 def ft_clusters(df):
@@ -91,49 +36,96 @@ def ft_clusters(df):
     Calculate and plot clusters and inertia
     '''
     
-    df_scaled = preprocess_data(df)
-    inertias = []
-    max_clusters = 10
+    pd.set_option('display.float_format', lambda x: '%.2f' % x)
 
-    for k in range(1, max_clusters + 1):
-        kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-        kmeans.fit(df_scaled)
-        inertias.append(kmeans.inertia_)
+    print(f"DF base: \n {df}")
+    print()
+    print(f"DF base describe: \n {df.describe()}")
+    print()
     
-    # Plot inertia
-    plt.figure(figsize=(10, 5))
-    plt.plot(range(1, 11), inertias, marker='o')
-    plt.xlabel('Number of clusters')
-    plt.ylabel('Inertia')
-    plt.title('Inertia vs Number of clusters')
-    plt.grid()
-    
-    plt.gca().yaxis.set_major_formatter(mticker.ScalarFormatter(useOffset=False))
-    plt.gca().yaxis.get_major_formatter().set_scientific(False)
-    plt.gca().yaxis.set_minor_formatter(mticker.ScalarFormatter(useOffset=False))
+    scaler = StandardScaler()
+    df_scaled = scaler.fit_transform(df[['purchases']])
 
+    wss = []
+    for k in range(1, 11):
+        kmeans = KMeans(n_clusters=k, random_state=0, n_init=10).fit(df_scaled)
+        wss.append(kmeans.inertia_)
+    
+    plt.plot(range(1, 11), wss)
+    plt.xlabel("Number of clusters")
+    plt.title("The Elbow Method")
     plt.tight_layout()
+    plt.savefig('elbow.png')
+    plt.close()
 
-    plt.savefig('clusters_vs_inertia.png')
+    kmeans = KMeans(n_clusters=2, random_state=0)
+    clusters = kmeans.fit_predict(df_scaled)
+    df['2clusters'] = clusters
+    
+    cluster_summary = df.groupby('2clusters').describe()
+    print(cluster_summary['purchases'].T)
+    print()
+    
+    kmeans_3 = KMeans(n_clusters=3, random_state=0)
+    clusters_3 = kmeans_3.fit_predict(df_scaled)
+    df['3clusters'] = clusters_3
+    
+    cluster_summary_3 = df.groupby('3clusters').describe()
+    print(cluster_summary_3['purchases'].T)
+    print()
+
+    ax = df[df['2clusters'] == 0].boxplot(column='purchases', grid=False, vert=False, showfliers=False)
+    plt.title('Distribution with 2 clusters - Cluster 0')
+    plt.xlabel('Cluster 0')
+    plt.ylabel('')
+    ax.set_yticklabels([])
+    plt.tight_layout()
+    plt.savefig('2_clusters_boxplot_cluster_0.png')
     plt.close()
     
-    kmeans = KMeans(n_clusters=5, random_state=42, n_init=10)
-    kmeans.fit(df_scaled)
+    ax = df[df['2clusters'] == 1].boxplot(column='purchases', grid=False, vert=False, showfliers=False)
+    plt.title('Distribution with 2 clusters - Cluster 1')
+    plt.xlabel('Cluster 1')
+    plt.ylabel('')
+    ax.set_yticklabels([])
+    plt.tight_layout()
+    plt.savefig('2_clusters_boxplot_cluster_1.png')
+    plt.close()
     
-    df['cluster'] = kmeans.labels_
+    ax = df[df['3clusters'] == 0].boxplot(column='purchases', grid=False, vert=False, showfliers=False)
+    plt.title('Distribution with 2 clusters - Cluster 0')
+    plt.xlabel('Cluster 0')
+    plt.ylabel('')
+    ax.set_yticklabels([])
+    plt.tight_layout()
+    plt.savefig('3_clusters_boxplot_cluster_0.png')
+    plt.close()
     
-    print(df.head())
+    ax = df[df['3clusters'] == 1].boxplot(column='purchases', grid=False, vert=False, showfliers=False)
+    plt.title('Distribution with 3 clusters - Cluster 1')
+    plt.xlabel('Cluster 1')
+    plt.ylabel('')
+    ax.set_yticklabels([])
+    plt.tight_layout()
+    plt.savefig('3_clusters_boxplot_cluster_1.png')
+    plt.close()
     
-    visualize_clusters(df, kmeans)
-
-
+    ax = df[df['3clusters'] == 2].boxplot(column='purchases', grid=False, vert=False, showfliers=False)
+    plt.title('Distribution with 3 clusters - Cluster 2')
+    plt.xlabel('Cluster 2')
+    plt.ylabel('')
+    ax.set_yticklabels([])
+    plt.tight_layout()
+    plt.savefig('3_clusters_boxplot_cluster_2.png')
+    plt.close()
+    
+    
 if __name__ == "__main__":
     start_time = time.time()
 
     try:
         df = pd.read_sql(query, engine)
         ft_clusters(df)
-
         
     except Exception as error:
         print(f"An error occurred: {error}")
