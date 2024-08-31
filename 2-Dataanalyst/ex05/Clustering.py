@@ -167,12 +167,10 @@ def recency_vs_frequency(df):
     
     
 def kmeans_clustering(df):
-    
-    
-    features = ['purchase_count', 'customer_age_days']
+
+    features = ['customer_age_days', 'purchase_count']
     cluster_number = 2
 
-    # Escala las características para que tengan media 0 y varianza 1
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(df[features])
     
@@ -193,11 +191,26 @@ def kmeans_clustering(df):
     
     print(df.head())
 
+    summary = df.groupby('cluster').describe()
+    print(summary['purchase_count'].T)
+    print()
+
+    ax = df[df['cluster'] == 1].boxplot(column='purchase_count', grid=False, vert=False)
+    plt.title('Distribution')
+    plt.xlabel('Cluster 0')
+    plt.ylabel('')
+    ax.set_yticklabels([])
+    plt.tight_layout()
+    plt.savefig('cluster_boxplot_cluster_0.png')
+    plt.close()
+
+
     # Añadir los centroides a la visualización
     centroids = kmeans.cluster_centers_
 
     # Desescalamos los centroides para visualizarlos en la escala original
     centroids_original = scaler.inverse_transform(centroids)
+    centroids_selected = centroids_original[:, [features.index('customer_age_days'), features.index('purchase_count')]]
 
     # Crear el gráfico de dispersión
     plt.figure(figsize=(10, 8))
@@ -207,8 +220,8 @@ def kmeans_clustering(df):
 
     for i in range(cluster_number): 
         plt.scatter(
-            df[df['cluster'] == i]['purchase_count'], 
             df[df['cluster'] == i]['customer_age_days'], 
+            df[df['cluster'] == i]['purchase_count'], 
             s=100,  # Tamaño del punto
             c=colors[i],  # Color basado en el cluster
             label=f'Cluster {i}',
