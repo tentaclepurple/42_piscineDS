@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  python:
+    image: python:3.10
+    container_name: python
+    volumes:
+      - .:/python
+    working_dir: /python
+    command: bash -c "pip install -r requirements.txt && top -b"
+
+  jupyter:
+    build: .
+    container_name: jupyter_lab
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/home/jovyan/work
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
