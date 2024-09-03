@@ -9,12 +9,14 @@ services:
     working_dir: /python
     command: bash -c "pip install -r requirements.txt && top -b"
 
-  jupyter:
-    build: .
+  jupyter-lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: jupyter_lab
     ports:
-      - "8888:8888"
+      - 8888:8888
     volumes:
-      - .:/home/jovyan/work
-    environment:
-      - JUPYTER_ENABLE_LAB=yes
+      - type: bind
+        source: .
+        target: /app

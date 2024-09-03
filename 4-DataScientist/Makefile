@@ -1,13 +1,16 @@
 all:
 	docker compose up -d
 
+run:
+	docker logs jupyter_lab
+	
 down:
 	docker compose down
 
-exec_python:
+python:
 	docker exec -it python bash
 
-exec_jupiter:
+jupyter:
 	docker exec -it jupyter_lab bash
 
 clean: down

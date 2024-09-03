@@ -1,9 +1,16 @@
-FROM jupyter/base-notebook:latest
+FROM python:3.10
 
-WORKDIR /home/jovyan/work
+WORKDIR /app
 
-COPY requirements.txt /home/jovyan/work/requirements.txt
+COPY requirements.txt .
 
-RUN pip install -r /home/jovyan/work/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install jupyterlab
 
-CMD ["start.sh", "jupyter", "lab"]
+COPY . .
+
+EXPOSE 8888
+
+VOLUME /app
+
+CMD ["jupyter", "lab", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--allow-root"]
