@@ -1,10 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def read_labels(file_path):
     with open(file_path, 'r') as file:
         labels = [line.strip() for line in file]
     return labels
+
 
 def compute_confusion_matrix(truth, predictions):
     TP = FP = FN = TN = 0
@@ -21,6 +23,7 @@ def compute_confusion_matrix(truth, predictions):
     
     return np.array([[TP, FP], [FN, TN]])
 
+
 def calculate_metrics(conf_matrix):
     TP, FP = conf_matrix[0]
     FN, TN = conf_matrix[1]
@@ -31,6 +34,7 @@ def calculate_metrics(conf_matrix):
     accuracy = (TP + TN) / (TP + TN + FP + FN) if (TP + TN + FP + FN) > 0 else 0
     
     return precision, recall, f1_score, accuracy
+
 
 def plot_confusion_matrix(conf_matrix, labels):
     fig, ax = plt.subplots()
@@ -48,20 +52,23 @@ def plot_confusion_matrix(conf_matrix, labels):
     plt.title('Matriz de Confusión')
     plt.show()
 
-truth_file = '../truth.txt'
-predictions_file = '../predictions.txt'
 
-truth_labels = read_labels(truth_file)
-prediction_labels = read_labels(predictions_file)
+if __name__ == "__main__" :
+        
+    truth_file = '../truth.txt'
+    predictions_file = '../predictions.txt'
 
-conf_matrix = compute_confusion_matrix(truth_labels, prediction_labels)
+    truth_labels = read_labels(truth_file)
+    prediction_labels = read_labels(predictions_file)
 
-precision, recall, f1_score, accuracy = calculate_metrics(conf_matrix)
+    conf_matrix = compute_confusion_matrix(truth_labels, prediction_labels)
 
-print(f'Precisión: {precision:.2f}')
-print(f'Recuerdo: {recall:.2f}')
-print(f'F1-Score: {f1_score:.2f}')
-print(f'Exactitud: {accuracy:.2f}')
+    precision, recall, f1_score, accuracy = calculate_metrics(conf_matrix)
 
-labels = ['Jedi', 'Sith']
-plot_confusion_matrix(conf_matrix, labels)
+    print(f'Precisión: {precision:.2f}')
+    print(f'Recuerdo: {recall:.2f}')
+    print(f'F1-Score: {f1_score:.2f}')
+    print(f'Exactitud: {accuracy:.2f}')
+
+    labels = ['Jedi', 'Sith']
+    plot_confusion_matrix(conf_matrix, labels)
